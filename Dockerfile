@@ -1,11 +1,11 @@
-# Basis-Image mit Nginx
+FROM node:lts-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
 FROM nginx:alpine
-
-# Entferne die Standard-Nginx-Dateien
-RUN rm -rf /usr/share/nginx/html/*
-
-# Kopiere das gebaute Projekt ins Nginx-Verzeichnis
-COPY dist/ /usr/share/nginx/html/
-
-# Port für den Container
+COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -q -O /dev/null http://localhost/ || exit 1
