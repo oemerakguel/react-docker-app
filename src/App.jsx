@@ -1,37 +1,31 @@
-import { useState, useEffect } from 'react';
-import TodoInput from './TodoInput';
-import TodoList from './TodoList';
+import { useState, useEffect } from "react";
 
 function App() {
-  const [todos, setTodos] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [items, setItems] = useState([]);
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  const addTodo = (text) => {
-    setTodos([...todos, { id: Date.now(), text, done: false }]);
-  };
-
-  const toggleTodo = (id) => {
-    setTodos(
-      todos.map(todo =>
-        todo.id === id ? { ...todo, done: !todo.done } : todo
-      )
-    );
-  };
-
-  const filteredTodos = todos.filter(todo =>
-    filter === 'all' ? true : filter === 'done' ? todo.done : !todo.done
-  );
+  useEffect(() => {
+    fetch(`${API_URL}/api/items`)
+      .then((res) => {
+        if (!res.ok) throw new Error("API-Fehler: " + res.status);
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Empfangene Daten:", data);
+        setItems(data);
+      })
+      .catch((err) => console.error("Fehler beim Laden:", err));
+  }, []);
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>To-do-Liste</h1>
-      <TodoInput onAdd={addTodo} />
-      <div>
-        <button onClick={() => setFilter('all')}>Alle</button>
-        <button onClick={() => setFilter('open')}>Offen</button>
-        <button onClick={() => setFilter('done')}>Erledigt</button>
-      </div>
-      <TodoList todos={filteredTodos} onToggle={toggleTodo} />
+    <div>
+      <h1>Items from Backend:</h1>
+      <ul>
+        {items.map((item) => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+      {items.length === 0 && <p>Keine Items gefunden! 🧐</p>}
     </div>
   );
 }
