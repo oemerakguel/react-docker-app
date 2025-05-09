@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 function App() {
   const [items, setItems] = useState([]);
-  const API_URL = import.meta.env.VITE_API_URL + items;
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     fetch(`${API_URL}/api/items`)

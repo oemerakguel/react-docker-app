@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # PostgreSQL-Datenbank
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+
+  # Backend-Service
+  backend:
+    build: ./backend
+    environment:
+      DB_HOST: database  # Name des DB-Services in Compose
+      DB_PORT: 5432
+      DB_USER: myuser
+      DB_PASSWORD: mypassword
+      DB_NAME: mydatabase
+    expose:
+      - "3000"
+    depends_on:
+      - database
+
+  # Frontend-Service mit Nginx
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+# Volume für persistente DB-Daten
+volumes:
+  postgres_data:
