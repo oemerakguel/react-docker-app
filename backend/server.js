@@ -23,6 +23,10 @@ app.get("/api/items", async (req, res) => {
   }
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).send("Dein Backend ist healthy");
+});
+
 app.post("/api/items", async (req, res) => {
   const { name, description } = req.body;  // Name und Description aus dem Request-Body
   try {
