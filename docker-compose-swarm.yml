@@ -1,0 +1,62 @@
+services:
+  frontend:
+    image: oeak/frontend:latest
+    ports:
+      - "8080:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=http://backend:3000
+    networks:
+      - app-network
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  backend:
+    image: oeak/backend:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_USER=myuser
+      - DB_PASSWORD=mypassword
+      - DB_NAME=mydatabase
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+    networks:
+      - app-network
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  database:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - /home/ubuntu/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - app-network
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: overlay
